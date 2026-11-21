@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basketball Scoreboard</title>
+
+<style>
+body{
+    background:#ffffff;
+    color:#000000;
+    font-family:Arial, Helvetica, sans-serif;
+    max-width:700px;
+    margin:0 auto;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.date-row{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+input{
+    background:#ffffff;
+    color:#000000;
+}
+
+#gameDate{
+    background:#ffffff;
+    color:#000000;
+    border:2px solid #999;
+    border-radius:6px;
+    padding:8px;
+    font-size:1rem;
+}
+
+.scoreboard{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.team{
+    background:#ffffff;
+    border:2px solid #cccccc;
+    border-radius:12px;
+    padding:20px;
+    text-align:center;
+}
+
+.team-name{
+    width:95%;
+    font-size:1.4rem;
+    font-weight:bold;
+    text-align:center;
+    padding:8px;
+    margin-bottom:15px;
+    background:#ffffff;
+    color:#000000;
+    border:2px solid #999;
+    border-radius:8px;
+}
+
+.score{
+    width:220px;
+    max-width:90%;
+    text-align:center;
+    font-size:5rem;
+    font-weight:bold;
+    padding:10px;
+    margin-bottom:15px;
+    background:#ffffff;
+    color:#000000;
+    border:2px solid #999;
+    border-radius:8px;
+}
+
+.buttons{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:none;
+    border-radius:8px;
+    padding:12px 18px;
+    font-size:1rem;
+    color:white;
+    cursor:pointer;
+    min-width:70px;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+.home-btn{
+    background:#1976d2;
+}
+
+.away-btn{
+    background:#d32f2f;
+}
+
+.control-row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:20px;
+}
+
+.load{
+    background:#1565c0;
+}
+
+.save{
+    background:#2e7d32;
+}
+
+.undo{
+    background:#ef6c00;
+}
+
+.reset{
+    background:#616161;
+}
+
+#status{
+    text-align:center;
+    margin-top:15px;
+    min-height:24px;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Basketball Scoreboard</h1>
+
+<div class="date-row">
+    <label for="gameDate"><strong>Game Date:</strong></label>
+    <input type="date" id="gameDate">
+</div>
+
+<div class="scoreboard">
+
+    <!-- HOME TEAM -->
+
+    <div class="team">
+
+        <input
+            id="homeName"
+            class="team-name"
+            type="text"
+            value="Home Team">
+
+        <br>
+
+        <input
+            id="homeScore"
+            class="score"
+            type="number"
+            min="0"
+            value="0">
+
+        <div class="buttons">
+            <button class="home-btn"
+                    data-team="home"
+                    data-points="1">+1</button>
+
+            <button class="home-btn"
+                    data-team="home"
+                    data-points="2">+2</button>
+
+            <button class="home-btn"
+                    data-team="home"
+                    data-points="3">+3</button>
+        </div>
+
+    </div>
+
+    <!-- AWAY TEAM -->
+
+    <div class="team">
+
+        <input
+            id="awayName"
+            class="team-name"
+            type="text"
+            value="Away Team">
+
+        <br>
+
+        <input
+            id="awayScore"
+            class="score"
+            type="number"
+            min="0"
+            value="0">
+
+        <div class="buttons">
+            <button class="away-btn"
+                    data-team="away"
+                    data-points="1">+1</button>
+
+            <button class="away-btn"
+                    data-team="away"
+                    data-points="2">+2</button>
+
+            <button class="away-btn"
+                    data-team="away"
+                    data-points="3">+3</button>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="control-row">
+
+    <button id="loadBtn" class="load">
+        Load
+    </button>
+
+    <button id="saveBtn" class="save">
+        Save
+    </button>
+
+    <button id="undoBtn" class="undo">
+        Undo
+    </button>
+
+    <button id="resetBtn" class="reset">
+        Reset Scores
+    </button>
+
+</div>
+
+<div id="status"></div>
+
+<script>
+
+let home = 0;
+let away = 0;
+let history = [];
+
+const homeName = document.getElementById("homeName");
+const awayName = document.getElementById("awayName");
+const homeScore = document.getElementById("homeScore");
+const awayScore = document.getElementById("awayScore");
+const gameDate = document.getElementById("gameDate");
+const status = document.getElementById("status");
+
+function render() {
+    homeScore.value = home;
+    awayScore.value = away;
+}
+
+function saveState() {
+    history.push({
+        home: home,
+        away: away
+    });
+
+    if (history.length > 100) {
+        history.shift();
+    }
+}
+
+function saveData() {
+
+    localStorage.setItem(
+        "basketballHomeName",
+        homeName.value
+    );
+
+    localStorage.setItem(
+        "basketballAwayName",
+        awayName.value
+    );
+
+    localStorage.setItem(
+        "basketballHomeScore",
+        home
+    );
+
+    localStorage.setItem(
+        "basketballAwayScore",
+        away
+    );
+
+    localStorage.setItem(
+        "basketballGameDate",
+        gameDate.value
+    );
+
+    status.textContent = "Game saved";
+}
+
+function loadData() {
+
+    homeName.value =
+        localStorage.getItem("basketballHomeName")
+        || "Home Team";
+
+    awayName.value =
+        localStorage.getItem("basketballAwayName")
+        || "Away Team";
+
+    home =
+        parseInt(
+            localStorage.getItem("basketballHomeScore")
+        ) || 0;
+
+    away =
+        parseInt(
+            localStorage.getItem("basketballAwayScore")
+        ) || 0;
+
+    gameDate.value =
+        localStorage.getItem("basketballGameDate")
+        || new Date().toISOString().split("T")[0];
+
+    render();
+
+    status.textContent = "Saved game loaded";
+}
+
+if (!localStorage.getItem("basketballGameDate")) {
+    gameDate.value =
+        new Date().toISOString().split("T")[0];
+}
+
+document.querySelectorAll("[data-team]")
+.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        saveState();
+
+        const points =
+            parseInt(button.dataset.points) || 0;
+
+        if (button.dataset.team === "home") {
+            home += points;
+        } else {
+            away += points;
+        }
+
+        render();
+    });
+
+});
+
+homeScore.addEventListener("change", () => {
+
+    saveState();
+
+    home = Math.max(
+        0,
+        parseInt(homeScore.value) || 0
+    );
+
+    render();
+});
+
+awayScore.addEventListener("change", () => {
+
+    saveState();
+
+    away = Math.max(
+        0,
+        parseInt(awayScore.value) || 0
+    );
+
+    render();
+});
+
+document.getElementById("saveBtn")
+.addEventListener("click", saveData);
+
+document.getElementById("loadBtn")
+.addEventListener("click", () => {
+
+    if (confirm(
+        "Load the saved game?"
+    )) {
+        loadData();
+    }
+
+});
+
+document.getElementById("undoBtn")
+.addEventListener("click", () => {
+
+    if (history.length > 0) {
+
+        const previous =
+            history.pop();
+
+        home = previous.home;
+        away = previous.away;
+
+        render();
+
+        status.textContent =
+            "Last action undone";
+    }
+    else {
+
+        status.textContent =
+            "Nothing to undo";
+    }
+
+});
+
+document.getElementById("resetBtn")
+.addEventListener("click", () => {
+
+    home = 0;
+    away = 0;
+    history = [];
+
+    render();
+
+    status.textContent =
+        "Scores reset";
+});
+
+loadData();
+
+</script>
+
+</body>
+</html>
